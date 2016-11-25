@@ -16,22 +16,34 @@ class Otaku extends FlxSprite
 	public var keyToKill:Int;
 	public var KillTrigger:FlxKey;
 	public var prompt:FlxText;
-	
+	private var otakuSprite:FlxSprite;
+
 	public function new(?X:Float=0, ?Y:Float=0, letterCode:Int) 
 	{		
 		super(X, Y);	
-		makeGraphic(32, 32, 0xFF00FF00);
+		otakuSprite = new FlxSprite();
+		otakuSprite.loadGraphic("assets/images/Letter.png", true, 64, 32);
+		otakuSprite.animation.add("breaking", [1, 2, 3], 15, false);
+		loadGraphicFromSprite(otakuSprite);
+
 		keyToKill = letterCode;
 		KillTrigger = keyToKill;
-		prompt = new FlxText(x, y - 10, 16, KillTrigger.toString());
+		prompt = new FlxText(x, y - 10, 20, KillTrigger.toString());
+		prompt.setFormat("assets/BadaboomBB_Reg.ttf", 24, 0xFF000000);
 		exists = false;
 	}
 
 	override public function update(elapsed:Float):Void 
 	{
+		prompt.x = x + (width / 2) - (prompt.width / 2);
+		prompt.y = y - 25;
+
+		if(!alive && animation.finished)
+		{
+			exists = false;	
+		}
+
 		super.update(elapsed);
-		prompt.x = x + (width / 2);
-		prompt.y = y - 15;
 	}
 	
 	public function Reuse(spawnX:Float, spawnY:Float):Void
@@ -41,12 +53,18 @@ class Otaku extends FlxSprite
 		prompt.x = x + (width / 2);
 		prompt.y = y - 15;
 		exists = true;
+		alive = true;
+		otakuSprite = new FlxSprite();
+		otakuSprite.loadGraphic("assets/images/Letter.png", true, 64, 32);
+		otakuSprite.animation.add("breaking", [1, 2, 3], 15, false);
+		loadGraphicFromSprite(otakuSprite);
 		FlxG.state.add(prompt);
 	}
 	
 	public function Deactivate():Void
 	{
-		exists = false;
+		alive = false;
+		animation.play("breaking");
 		FlxG.state.remove(prompt);
 	}
 }

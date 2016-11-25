@@ -9,17 +9,15 @@ import flixel.util.FlxColor;
 class TutorialState extends FlxState
 {
 
-	private	var text:FlxText;
+	private var tutorialBg:FlxSprite;
 	
 	override public function create():Void
 	{
 		FlxG.camera.fade(FlxColor.BLACK, 1, true);
 		super.create();
-		text = new FlxText(0, (FlxG.height / 2), 0, "Tutorial");
-		text.alignment = CENTER;
-		text.screenCenter(X);
-		text.color = 0xff00ffff;
-		add(text);
+		tutorialBg = new FlxSprite(0, 0);
+		tutorialBg.loadGraphic("assets/images/TutorialBG.png", false);
+		add(tutorialBg);
 	}
 
 	override public function update(elapsed:Float):Void

@@ -34,18 +34,20 @@ class PlayState extends FlxState
 	private var timeRemaining:FlxText;
 	private var comboCounter:FlxText;
 	private var combo:Int = 0;
+	private var hype:Bool = false;
+	private var hypeFactor:Float = 0.005;
 
 	override public function create():Void
 	{
 		super.create();
-		
+		bgColor = 0xFFFFF0BE;
 		respawnGetter = new FlxRandom();
 		var loader:FlxOgmoLoader = new FlxOgmoLoader(AssetPaths.makushilvl__oel);
 		loader.loadEntities(LoadRespawns, "respawns");
 		FlxG.worldBounds.set(0, 0, 800, 600);
 		
 		var hud:FlxSprite = new FlxSprite(0, 500);
-		hud.makeGraphic(800, 100);
+		hud.loadGraphic("assets/images/Hud3.png", false, 800, 100);
 		add(hud);
 		
 		waifu = new Waifu(400, 250);
@@ -84,13 +86,55 @@ class PlayState extends FlxState
 		FlxG.overlap(otakus, waifu, null, CollsionHandler);
 		MoveOtakus();
 		CheckKeyPress();
-		
+		if(hype)
+		{		
+			FlxG.camera.shake(hypeFactor, 0.2);
+		}
 		super.update(elapsed);
 	}
 	
 	private function UpdateCombo():Void
 	{
 		comboCounter.text = "X" + combo;
+		
+		if (combo > Reg.maxCombo)
+		{
+			Reg.maxCombo = combo;
+		}
+		
+		if(combo >= 10 && !hype)
+		{
+			GetHyped();
+		}
+	}
+
+	private function GetHyped():Void
+	{
+		var song:Int = FlxG.random.int(1, 3);
+		Reg.musicManager.stop();
+		switch (song) 
+		{
+			case 1:
+				Reg.musicManager = FlxG.sound.load("assets/music/NightOfFire.ogg", 1, true);
+				Reg.musicManager.play();
+			case 2:
+				Reg.musicManager = FlxG.sound.load("assets/music/DejaVu.ogg", 1, true);
+				Reg.musicManager.play();
+			case 3:
+				Reg.musicManager = FlxG.sound.load("assets/music/RunningInThe90S.ogg", 1, true);
+				Reg.musicManager.play();
+		}
+
+		hype = true;
+	}
+
+	private function KillHype():Void
+	{
+		hype = false;
+		Reg.musicManager.stop();
+		Reg.musicManager = FlxG.sound.load("assets/music/MainMenu.ogg", 1, true);
+		Reg.musicManager.play();
+		hypeFactor = 0.001;
 	}
 	
 	private function Countdown(Timer:FlxTimer):Void
@@ -106,7 +150,15 @@ class PlayState extends FlxState
 		
 		if (nextSpawnSpeedUp == 0)
 		{
-			spawnSpeed -= 0.4;
+			if(spawnSpeed == 1)
+			{
+				spawnSpeed = 1;	
+			}
+			else
+			{
+				spawnSpeed -= 1;
+			}
+		
 			spawnTimer.time = spawnSpeed;
 			nextSpawnSpeedUp = 20;
 		}
@@ -139,6 +191,19 @@ class PlayState extends FlxState
 					otaku.Deactivate();
 					combo++;
 					UpdateCombo();
+					Reg.otakusBeaten++;
+
+					if(hype)
+					{
+						FlxG.camera.flash(respawnGetter.color());	
+						
+						if(hypeFactor < 0.01)
+						{
+							hypeFactor += 0.001;	
+						}
+						
+					}
+					
 				}	
 			}
 			
@@ -146,6 +211,12 @@ class PlayState extends FlxState
 			{
 				waifu.Damage();
 				combo = 0;
+				
+				if(hype)
+				{
+					KillHype();	
+				}
+				
 				UpdateCombo();
 			}
 		}
@@ -164,12 +235,21 @@ class PlayState extends FlxState
 		if (sprite1ClassName == "sprites.Otaku" && sprite2ClassName == "sprites.Waifu")
 		{			
 			var otaku: Dynamic = cast(Sprite1, Otaku);
-			otaku.Deactivate();
-			waifu.Damage();
-			combo = 0;
-			UpdateCombo();
-			
-			return true;
+			if(otaku.alive)
+			{
+				otaku.Deactivate();
+				waifu.Damage();
+				combo = 0;
+				
+				if(hype)
+				{
+					KillHype();	
+				}
+				
+				UpdateCombo();
+				
+				return true;
+			}
 		}
 		
 		return false;
@@ -188,6 +268,7 @@ class PlayState extends FlxState
 		
 		otaku.Reuse(spawn.x, spawn.y);
 		otakus.add(otaku);
+		Reg.totalOtakus++;
 	}
 	
 	private function LoadRespawns( entityName:String, entityData:Xml):Void

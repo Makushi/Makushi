@@ -1,9 +1,12 @@
 package sprites;
 
+import flash.events.GameInputEvent;
 import flixel.FlxSprite;
 import flixel.system.FlxAssets.FlxGraphicAsset;
 import flixel.ui.FlxBar;
-
+import flixel.FlxState;
+import flixel.FlxG;
+import states.GameOverState;
 /**
  * ...
  * @author Maximiliano Viñas Craba
@@ -27,10 +30,10 @@ class Waifu extends FlxSprite
 	{
 		hp -= 500;
 		hpBar.value = hp;
-		//if (hp <= 0)
-		//{
-			//FlxG.switchState(new GameOverState(true));
-		//}
+		if (hp <= 0)
+		{
+			FlxG.switchState(new GameOverState(false));
+		}
 		
 	}
 }
