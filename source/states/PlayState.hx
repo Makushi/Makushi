@@ -26,8 +26,8 @@ class PlayState extends FlxState
 	private var pressedKey:FlxKey;
 	private var spawnTimer:FlxTimer;
 	private var clockTimer:FlxTimer;
+	private var speedUpTimer:FlxTimer;
 	private var spawnSpeed:Float = 3;
-	private var nextSpawnSpeedUp:Int = 20;
 	private var respawnPoints = new Array();
 	private var respawnGetter:FlxRandom;
 	private var timeLeft:Int = 120;
@@ -40,26 +40,31 @@ class PlayState extends FlxState
 	override public function create():Void
 	{
 		super.create();
+
 		bgColor = 0xFFFFF0BE;
 		respawnGetter = new FlxRandom();
+
 		var loader:FlxOgmoLoader = new FlxOgmoLoader(AssetPaths.makushilvl__oel);
 		loader.loadEntities(LoadRespawns, "respawns");
 		FlxG.worldBounds.set(0, 0, 800, 600);
 		
 		var hud:FlxSprite = new FlxSprite(0, 500);
-		hud.loadGraphic("assets/images/Hud3.png", false, 800, 100);
+		hud.loadGraphic("assets/images/Hud.png", false, 800, 100);
 		add(hud);
 		
-		waifu = new Waifu(400, 250);
+		waifu = new Waifu();
 		add(waifu);
 		add(waifu.hpBar);
 
 		timeRemaining = new FlxText(530, 520, 0, "TIME LEFT\n    " + timeLeft, 20);
 		timeRemaining.color = 0xFF000000;
+		timeRemaining.setFormat("assets/BadaboomBB_Reg.ttf", 24, 0xFF000000);
 		add(timeRemaining);
 		
-		comboCounter = new FlxText(700, 520, 0, "X" + combo, 50);
+		comboCounter = new FlxText(680, 510, 0, "X" + combo, 50);
 		comboCounter.color = 0xFF000000;
+		comboCounter.setFormat("assets/BadaboomBB_Reg.ttf", 64, 0xFF000000);
+
 		add(comboCounter);
 		
 		otakus = new FlxTypedGroup<Otaku>(26);
@@ -70,6 +75,9 @@ class PlayState extends FlxState
 		
 		clockTimer = new FlxTimer();
 		clockTimer.start(1, Countdown, 0);
+
+		speedUpTimer = new FlxTimer();
+		speedUpTimer.start(20, SpeedUpRespawn, 2);
 		
 		var letterCode:Int = 65;
 		
@@ -86,10 +94,12 @@ class PlayState extends FlxState
 		FlxG.overlap(otakus, waifu, null, CollsionHandler);
 		MoveOtakus();
 		CheckKeyPress();
+
 		if(hype)
 		{		
 			FlxG.camera.shake(hypeFactor, 0.2);
 		}
+
 		super.update(elapsed);
 	}
 	
@@ -102,7 +112,7 @@ class PlayState extends FlxState
 			Reg.maxCombo = combo;
 		}
 		
-		if(combo >= 10 && !hype)
+		if(combo >= 15 && !hype)
 		{
 			GetHyped();
 		}
@@ -140,28 +150,24 @@ class PlayState extends FlxState
 	private function Countdown(Timer:FlxTimer):Void
 	{
 		timeLeft--;
-		nextSpawnSpeedUp--;
 		timeRemaining.text = "TIME LEFT\n    " + timeLeft;
 		
+		if(timeLeft < 30)
+		{
+			spawnSpeed = 0.5;
+			spawnTimer.time = spawnSpeed;
+		}
+
 		if (timeLeft == 0)
 		{
 			FlxG.switchState(new GameOverState(true));
 		}
-		
-		if (nextSpawnSpeedUp == 0)
-		{
-			if(spawnSpeed == 1)
-			{
-				spawnSpeed = 1;	
-			}
-			else
-			{
-				spawnSpeed -= 1;
-			}
-		
-			spawnTimer.time = spawnSpeed;
-			nextSpawnSpeedUp = 20;
-		}
+	}
+
+	private function SpeedUpRespawn(Timer:FlxTimer):Void
+	{
+		spawnSpeed -= 1;
+		spawnTimer.time = spawnSpeed;
 	}
 	
 	private function MoveOtakus():Void
@@ -192,6 +198,7 @@ class PlayState extends FlxState
 					combo++;
 					UpdateCombo();
 					Reg.otakusBeaten++;
+					waifu.Blush();
 
 					if(hype)
 					{
@@ -203,7 +210,6 @@ class PlayState extends FlxState
 						}
 						
 					}
-					
 				}	
 			}
 			

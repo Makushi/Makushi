@@ -5,11 +5,9 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.text.FlxText;
-import flixel.ui.FlxButton;
-import flixel.math.FlxMath;
-import states.PlayState;
 import flixel.util.FlxColor;
 import flixel.system.FlxSound;
+import states.PlayState;
 
 /**
  * ...
@@ -31,15 +29,22 @@ class GameOverState extends FlxState
 	override public function create():Void
 	{
 		super.create();
-		
+	
+		Reg.musicManager.persist = false;
+		Reg.musicManager.stop();
+	
 		gameOverBg = new FlxSprite(0, 0);
 		if (_victory)
 		{
 			gameOverBg.loadGraphic("assets/images/GameOverWinBG.png", false);
+			Reg.musicManager = FlxG.sound.load("assets/sounds/WinFanfare.ogg", 1, false);
+			Reg.musicManager.play();
 		}
 		else
 		{
 			gameOverBg.loadGraphic("assets/images/GameOverLoseBG.png", false);
+			Reg.musicManager = FlxG.sound.load("assets/music/SadViolin.ogg", 1, false);
+			Reg.musicManager.play();
 		}
 		add(gameOverBg);
 		

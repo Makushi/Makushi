@@ -1,6 +1,5 @@
 package;
 
-import flixel.math.FlxPoint;
 import flixel.system.FlxSound;
 /**
  * ...

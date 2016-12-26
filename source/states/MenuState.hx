@@ -14,7 +14,6 @@ class MenuState extends FlxState
 	
 	override public function create():Void
 	{
-		
 		FlxG.camera.fade(FlxColor.BLACK, 1, true);
 		super.create();
 		
@@ -33,6 +32,7 @@ class MenuState extends FlxState
 	override public function update(elapsed:Float):Void
 	{	
 		super.update(elapsed);
+		
 		if (FlxG.keys.justPressed.ENTER)
 		{
 			FlxG.camera.fade(FlxColor.BLACK, 1, false, function()

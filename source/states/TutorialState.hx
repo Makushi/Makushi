@@ -8,7 +8,6 @@ import flixel.util.FlxColor;
 
 class TutorialState extends FlxState
 {
-
 	private var tutorialBg:FlxSprite;
 	
 	override public function create():Void
